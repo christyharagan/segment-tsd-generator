@@ -1,19 +1,19 @@
 import * as r from 'segment-typescript-api/cjs/config_request'
-import {compile} from './json_to_ts'
+import { compile } from './json_to_ts'
 import { JSONSchema7 } from 'json-schema'
 
 interface Options {
-	// Words that are reserved by a given language, and which should not be allowed
-	// for identifier names.
-	reservedWords: string[]
-	// String to use for quoted strings. Usually a single or double quote.
-	quoteChar: string
-	// A character set matching all characters that are allowed as the first character in an identifier.
-	allowedIdentifierStartingChars: string
-	// A character set matching all characters that are allowed within identifiers.
-	allowedIdentifierChars: string
+  // Words that are reserved by a given language, and which should not be allowed
+  // for identifier names.
+  reservedWords: string[]
+  // String to use for quoted strings. Usually a single or double quote.
+  quoteChar: string
+  // A character set matching all characters that are allowed as the first character in an identifier.
+  allowedIdentifierStartingChars: string
+  // A character set matching all characters that are allowed within identifiers.
+  allowedIdentifierChars: string
 }
-const JS_OPTIONS:Options = {
+const JS_OPTIONS: Options = {
   // See: https://mathiasbynens.be/notes/reserved-keywords#ecmascript-6
   // prettier-ignore
   reservedWords: [
@@ -42,7 +42,7 @@ async function to_ts(schema: JSONSchema7, name: string) {
   return s.replace("export interface", "declare interface").replace(/\[k\:\ string\]\:\ any/g, "")
 }
 
-export default async function(tracking_plan: r.TrackingPlan) {
+export default async function (tracking_plan: r.TrackingPlan) {
   let s = ''
 
   if (tracking_plan.rules.global && tracking_plan.rules.global.properties && tracking_plan.rules.global.properties.properties && tracking_plan.rules.global.properties.properties !== true && tracking_plan.rules.global.properties.properties.properties) {
@@ -63,9 +63,9 @@ export default async function(tracking_plan: r.TrackingPlan) {
 
     s += `declare type SegmentTrackProtocol<E extends SegmentEvents> = ${tracking_plan.rules.events.reduce((s, e) =>
       `${s}E extends '${escapeString(e.name)}' ? ${escapeString(e.name).replace(/[ ]/g, '')} : `, '')}`
-    
-    s += `never
-`;
+
+    s += `never;
+declare type SegmentTrackProtocolUnion = ${tracking_plan.rules.events.reduce((s, e) => `${s} | {event: '${escapeString(e.name)}', properties: ${escapeString(e.name).replace(/[ ]/g, '')} }`, '').substring(3)}`;
 
     let interfaces = await Promise.all(tracking_plan.rules.events.map(async e => {
       if (e.rules.properties && e.rules.properties.properties && e.rules.properties.properties && e.rules.properties.properties !== true && e.rules.properties.properties.properties) {
