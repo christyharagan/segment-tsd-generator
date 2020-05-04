@@ -71,7 +71,9 @@ declare type SegmentTrackProtocolUnion = ${tracking_plan.rules.events.reduce((s,
       if (e.rules.properties && e.rules.properties.properties && e.rules.properties.properties && e.rules.properties.properties !== true && e.rules.properties.properties.properties) {
         return await to_ts(e.rules.properties.properties, escapeString(e.name))
       } else {
-        return ''
+        return `
+declare interface ${escapeString(e.name)}{}
+`
       }
     }))
 
