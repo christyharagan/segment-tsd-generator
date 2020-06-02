@@ -43,7 +43,7 @@ async function to_ts(schema: JSONSchema7, name: string) {
 }
 
 export default async function (tracking_plan: r.TrackingPlan) {
-  let s = ''
+  let s = 'declare type SegmentObjectDefinition = {}'
 
   if (tracking_plan.rules.global && tracking_plan.rules.global.properties && tracking_plan.rules.global.properties.properties && tracking_plan.rules.global.properties.properties !== true && tracking_plan.rules.global.properties.properties.properties) {
     // TODO...
