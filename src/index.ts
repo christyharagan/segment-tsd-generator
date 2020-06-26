@@ -39,11 +39,12 @@ function escapeString(str: string): string {
 
 async function to_ts(schema: JSONSchema7, name: string) {
   let s = await compile(schema as any, name)
-  return s.replace("export interface", "declare interface").replace(/\[k\:\ string\]\:\ any/g, "")
+  return s.replace("export interface", "declare interface").replace(/\[k\:\ string\]\:\ any/g, '')
 }
 
 export default async function (tracking_plan: r.TrackingPlan) {
-  let s = 'declare type SegmentObjectDefinition = {}'
+  let s = `declare type SegmentObjectDefinition = any
+`
 
   if (tracking_plan.rules.global && tracking_plan.rules.global.properties && tracking_plan.rules.global.properties.properties && tracking_plan.rules.global.properties.properties !== true && tracking_plan.rules.global.properties.properties.properties) {
     // TODO...
@@ -72,7 +73,7 @@ declare type SegmentTrackProtocolUnion = ${tracking_plan.rules.events.reduce((s,
         return await to_ts(e.rules.properties.properties, escapeString(e.name))
       } else {
         return `
-declare interface ${escapeString(e.name)}{}
+declare interface ${escapeString(e.name).replace(/[ ]/g, '')}{}
 `
       }
     }))
