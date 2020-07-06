@@ -51,9 +51,15 @@ export default async function (tracking_plan: r.TrackingPlan) {
   }
   if (tracking_plan.rules.identify && tracking_plan.rules.identify.properties && tracking_plan.rules.identify.properties.traits && tracking_plan.rules.identify.properties.traits !== true && tracking_plan.rules.identify.properties.traits.properties) {
     s += await to_ts(tracking_plan.rules.identify.properties.traits, 'SegmentIdentityProtocol')
+  } else {
+    s += `declare type SegmentIdentifyProtocol = any
+`
   }
   if (tracking_plan.rules.group && tracking_plan.rules.group.properties && tracking_plan.rules.group.properties.traits && tracking_plan.rules.group.properties.traits !== true && tracking_plan.rules.group.properties.traits.properties) {
     s += await to_ts(tracking_plan.rules.group.properties.traits, 'SegmentGroupProtocol')
+  } else {
+    s += `declare type SegmentGroupProtocol = any
+`
   }
 
   if (tracking_plan.rules.events && tracking_plan.rules.events.length > 0) {
