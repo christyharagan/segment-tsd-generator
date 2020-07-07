@@ -1,6 +1,6 @@
 {
   "name": "segment-tsd-generator",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Generate .d.ts files from Segment Protocol Tracking Plans",
   "repository": "christyharagan/segment-tsd-generator",
   "main": "cjs/index.js",
@@ -15,7 +15,7 @@
     "@types/json-schema": "^7.0.5",
     "@types/json-stringify-safe": "^5.0.0",
     "@types/lodash": "^4.14.157",
-    "@types/node": "^13.13.12"
+    "@types/node": "^13.13.13"
   },
   "dependencies": {
     "json-schema": "^0.2.5",
@@ -23,6 +23,6 @@
     "json-stringify-safe": "^5.0.1",
     "lodash": "^4.17.15",
     "segment-typescript-api": "^0.6.10",
-    "segment-typescript-definitions": "^0.2.6"
+    "segment-typescript-definitions": "^0.2.7"
   }
 }
