@@ -42,51 +42,61 @@ async function to_ts(schema: JSONSchema7, name: string) {
   return s.replace("export interface", "declare interface").replace(/\[k\:\ string\]\:\ any/g, '')
 }
 
-export default async function (tracking_plan: r.TrackingPlan) {
+export function tp_class_name(tp: r.TrackingPlan | string) {
+  return escapeString(typeof tp == 'string' ? tp : tp.display_name).replace(/[ ]/g, '')
+}
+
+export default async function (_tracking_plans: r.TrackingPlan | r.TrackingPlan[]) {
+  const tracking_plans = Array.isArray(_tracking_plans) ? _tracking_plans : [_tracking_plans]
   let s = `declare type SegmentObjectDefinition = any
 `
 
-  if (tracking_plan.rules.global && tracking_plan.rules.global.properties && tracking_plan.rules.global.properties.properties && tracking_plan.rules.global.properties.properties !== true && tracking_plan.rules.global.properties.properties.properties) {
-    // TODO...
-  }
-  if (tracking_plan.rules.identify && tracking_plan.rules.identify.properties && tracking_plan.rules.identify.properties.traits && tracking_plan.rules.identify.properties.traits !== true && tracking_plan.rules.identify.properties.traits.properties) {
-    s += await to_ts(tracking_plan.rules.identify.properties.traits, 'SegmentIdentityProtocol')
-  } else {
-    s += `declare type SegmentIdentifyProtocol = any
+  await Promise.all(tracking_plans.map(async tracking_plan => {
+    const tp_name = tracking_plans.length == 1 ? '' : tp_class_name(tracking_plan) //escapeString(tracking_plan.display_name).replace(/[ ]/g, '')
+
+    if (tracking_plan.rules.global && tracking_plan.rules.global.properties && tracking_plan.rules.global.properties.properties && tracking_plan.rules.global.properties.properties !== true && tracking_plan.rules.global.properties.properties.properties) {
+      // TODO...
+    }
+    if (tracking_plan.rules.identify && tracking_plan.rules.identify.properties && tracking_plan.rules.identify.properties.traits && tracking_plan.rules.identify.properties.traits !== true && tracking_plan.rules.identify.properties.traits.properties) {
+      s += await to_ts(tracking_plan.rules.identify.properties.traits, 'SegmentIdentityProtocol' + tp_name)
+    } else {
+      s += `
+declare type SegmentIdentifyProtocol${tp_name} = any
 `
-  }
-  if (tracking_plan.rules.group && tracking_plan.rules.group.properties && tracking_plan.rules.group.properties.traits && tracking_plan.rules.group.properties.traits !== true && tracking_plan.rules.group.properties.traits.properties) {
-    s += await to_ts(tracking_plan.rules.group.properties.traits, 'SegmentGroupProtocol')
-  } else {
-    s += `declare type SegmentGroupProtocol = any
+    }
+    if (tracking_plan.rules.group && tracking_plan.rules.group.properties && tracking_plan.rules.group.properties.traits && tracking_plan.rules.group.properties.traits !== true && tracking_plan.rules.group.properties.traits.properties) {
+      s += await to_ts(tracking_plan.rules.group.properties.traits, 'SegmentGroupProtocol' + tp_name)
+    } else {
+      s += `declare type SegmentGroupProtocol${tp_name} = any
 `
-  }
+    }
 
-  if (tracking_plan.rules.events && tracking_plan.rules.events.length > 0) {
-    s += `declare type SegmentEvents = ${tracking_plan.rules.events.reduce((s, e) => `${s}'${escapeString(e.name)}' | `, '')}`
-    s = s.substring(0, s.length - 3)
-    s += `
+    if (tracking_plan.rules.events && tracking_plan.rules.events.length > 0) {
+      s += `declare type SegmentEvents${tp_name} = ${tracking_plan.rules.events.reduce((s, e) => `${s}'${escapeString(e.name)}' | `, '')}`
+      s = s.substring(0, s.length - 3)
+      s += `
 `
 
-    s += `declare type SegmentTrackProtocol<E extends SegmentEvents> = ${tracking_plan.rules.events.reduce((s, e) =>
-      `${s}E extends '${escapeString(e.name)}' ? ${escapeString(e.name).replace(/[ ]/g, '')} : `, '')}`
+      s += `declare type SegmentTrackProtocol${tp_name}<E extends SegmentEvents${tp_name}> = ${tracking_plan.rules.events.reduce((s, e) =>
+        `${s}E extends '${escapeString(e.name)}' ? ${tp_name}${escapeString(e.name).replace(/[ ]/g, '')} : `, '')}`
 
-    s += `never;
-declare type SegmentTrackProtocolUnion = ${tracking_plan.rules.events.reduce((s, e) => `${s} | {event: '${escapeString(e.name)}', properties: ${escapeString(e.name).replace(/[ ]/g, '')} }`, '').substring(3)}`;
+      s += `never;
+declare type SegmentTrackProtocolUnion${tp_name} = ${tracking_plan.rules.events.reduce((s, e) => `${s} | {event: '${escapeString(e.name)}', properties: ${tp_name + escapeString(e.name).replace(/[ ]/g, '')} }`, '').substring(3)}`;
 
-    let interfaces = await Promise.all(tracking_plan.rules.events.map(async e => {
-      if (e.rules.properties && e.rules.properties.properties && e.rules.properties.properties && e.rules.properties.properties !== true && e.rules.properties.properties.properties) {
-        return await to_ts(e.rules.properties.properties, escapeString(e.name))
-      } else {
-        return `
-declare interface ${escapeString(e.name).replace(/[ ]/g, '')}{}
+      let interfaces = await Promise.all(tracking_plan.rules.events.map(async e => {
+        if (e.rules.properties && e.rules.properties.properties && e.rules.properties.properties && e.rules.properties.properties !== true && e.rules.properties.properties.properties) {
+          return await to_ts(e.rules.properties.properties, tp_name + escapeString(e.name).replace(/[ ]/g, ''))
+        } else {
+          return `
+declare interface ${tp_name + escapeString(e.name).replace(/[ ]/g, '')}{}
 `
-      }
-    }))
+        }
+      }))
 
-    s += interfaces.reduce((s, i) => `${s}${i}`, '')
+      s += interfaces.reduce((s, i) => `${s}${i}`, '')
 
-  }
+    }
+  }))
 
   return s
 }
