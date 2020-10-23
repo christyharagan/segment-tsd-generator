@@ -46,13 +46,13 @@ export function tp_class_name(tp: r.TrackingPlan | string) {
   return escapeString(typeof tp == 'string' ? tp : tp.display_name).replace(/[ ]/g, '')
 }
 
-export default async function (_tracking_plans: r.TrackingPlan | r.TrackingPlan[]) {
+export default async function (_tracking_plans: r.TrackingPlan | r.TrackingPlan[], always_prefix_tp_name?: boolean) {
   const tracking_plans = Array.isArray(_tracking_plans) ? _tracking_plans : [_tracking_plans]
   let s = `declare type SegmentObjectDefinition = any
 `
 
   await Promise.all(tracking_plans.map(async tracking_plan => {
-    const tp_name = tracking_plans.length == 1 ? '' : tp_class_name(tracking_plan) //escapeString(tracking_plan.display_name).replace(/[ ]/g, '')
+    const tp_name = !always_prefix_tp_name && tracking_plans.length == 1 ? '' : tp_class_name(tracking_plan) //escapeString(tracking_plan.display_name).replace(/[ ]/g, '')
 
     if (tracking_plan.rules.global && tracking_plan.rules.global.properties && tracking_plan.rules.global.properties.properties && tracking_plan.rules.global.properties.properties !== true && tracking_plan.rules.global.properties.properties.properties) {
       // TODO...

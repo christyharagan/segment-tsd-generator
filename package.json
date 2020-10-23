@@ -1,6 +1,6 @@
 {
   "name": "segment-tsd-generator",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Generate .d.ts files from Segment Protocol Tracking Plans",
   "repository": "christyharagan/segment-tsd-generator",
   "main": "cjs/index.js",
